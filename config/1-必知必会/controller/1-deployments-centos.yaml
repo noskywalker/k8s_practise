@@ -1,0 +1,23 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: centos-deploy
+spec:
+  selector:
+    matchLabels:
+      app: centos-svc
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: centos-svc
+    spec:
+      containers:
+      - name: centos-svc
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/centos-full
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
+        env:
+        - name: HTTP_PORT
+          value: "9987"

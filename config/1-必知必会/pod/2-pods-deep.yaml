@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+   name: spring-web-pod
+   labels:
+     name: spring-web-pod
+spec:
+   #hostNetwork: true
+   #hostPID: true
+   hostAliases:
+   - ip: "123.11.1.1"
+     hostnames:
+     - "dns.kaikeba.com"
+   containers:
+   - name: spring-web-pod
+     image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-web:2.0.0
+     ports:
+     - containerPort: 8080
+       hostPort: 8080
+     volumeMounts:
+     - name: pod-volume
+       mountPath: /root/web
+   - name: centos-pod
+     image: registry.cn-beijing.aliyuncs.com/alexzhang/centos-full
+     command: ["/bin/sh"]
+     args: ["-c", "while true; do echo hello; sleep 10;done"]
+     volumeMounts:
+     - name: pod-volume
+       mountPath: /root/centos
+   volumes:
+   - name: pod-volume
+     hostPath:
+       path: /root

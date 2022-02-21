@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: springboot-web-sfs
+spec:
+  serviceName: "springboot-svc-sfs"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: springboot-web-sfs
+  template:
+    metadata:
+      labels:
+        app: springboot-web-sfs
+    spec:
+      containers:
+      - name: springboot-web-sfs
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/centos-full
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
+#        volumeMounts:
+#        - name: www
+#          mountPath: /root/temp
+#  volumeClaimTemplates:
+#  - metadata:
+#      name: www
+#    spec:
+#      accessModes: [ "ReadWriteOnce" ]
+#      resources:
+#        requests:
+#          storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-svc-sfs
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: springboot-web-sfs

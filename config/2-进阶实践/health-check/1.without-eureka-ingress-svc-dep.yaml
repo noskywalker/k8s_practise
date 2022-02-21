@@ -1,0 +1,50 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-eureka
+spec:
+  selector:
+    matchLabels:
+      app: springboot-eureka
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: springboot-eureka
+    spec:
+      containers:
+      - name: springboot-eureka
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-web:2.0.0
+        ports:
+        - containerPort: 8080
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-eureka-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: springboot-eureka
+  type: ClusterIP
+
+---
+#ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: springboot-eureka-ingress
+spec:
+  rules:
+  - host: eureka.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: springboot-eureka-service
+          servicePort: 80

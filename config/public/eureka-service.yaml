@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-service
+spec:
+  ports:
+  - nodePort: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: eureka-pod
+  type: ClusterIP

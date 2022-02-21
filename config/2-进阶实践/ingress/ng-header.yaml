@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  proxy-set-headers: "ingress-nginx/ng-headers"
+metadata:
+  name: nginx-configuration
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+---
+apiVersion: v1
+kind: ConfigMap
+data:
+  X-header: "true"
+metadata:
+  name: ng-headers
+  namespace: ingress-nginx

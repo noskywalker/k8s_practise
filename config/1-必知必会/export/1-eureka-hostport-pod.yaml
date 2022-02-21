@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+   name: eureka-pod
+   labels:
+     name: eureka-pod
+spec:
+   hostNetwork: true
+   containers:
+   - name: eureka-pod
+     image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-eureka:2.0.0
+     ports:
+     - containerPort: 8080
+       hostPort: 8080
+     env:
+     - name: JAVA_OPTS
+       valueFrom:
+         configMapKeyRef:
+           name: configs
+           key: JAVA_OPTS
+     - name: LOG_LEVEL
+       valueFrom:
+         configMapKeyRef:
+           name: configs
+           key: LOG_LEVEL
+     - name: HTTP_PORT
+       value: "9987"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configs
+data:
+  JAVA_OPTS: -Xms1024m
+  LOG_LEVEL: DEBUG

@@ -1,0 +1,57 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-web-dep
+spec:
+  selector:
+    matchLabels:
+      app: spring-web
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: spring-web
+    spec:
+      containers:
+      - name: spring-web
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-eureka:2.0.0
+        ports:
+        - containerPort: 8080
+#        livenessProbe:
+#          httpGet:
+#            path: /
+#            port: 8080
+#            scheme: HTTP
+#          initialDelaySeconds: 25
+#          periodSeconds: 5
+#          failureThreshold: 1
+#          successThreshold: 1
+#          timeoutSeconds: 5
+#        readinessProbe:
+#          httpGet:
+#            path: /
+#            port: 8080
+#            scheme: HTTP
+#          initialDelaySeconds: 20
+#          periodSeconds: 5
+#          failureThreshold: 1
+#          successThreshold: 1
+#          timeoutSeconds: 5
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-web-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+    nodePort: 30303
+  selector:
+    app: spring-web
+
+---

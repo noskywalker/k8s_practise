@@ -1,0 +1,13 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: glusterfs-storage-class
+provisioner: kubernetes.io/glusterfs
+parameters:
+  resturl: "http://10.98.53.219:80"
+  restauthenabled: "true"
+  restuser: admin
+  restuserkey: My Secret
+  volumetype: "none"
+  #使用单节点：need to set the durability type to "none" in order to create a single node
+  #https://github.com/gluster/gluster-kubernetes/issues/468

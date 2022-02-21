@@ -1,0 +1,75 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-web-old
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: springboot-web
+      version: v1.0.0
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: springboot-web
+        version: v1.0.0
+    spec:
+      containers:
+      - name: springboot-web #2.0.0/1.0.0
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-web:1.0.0
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe: #r如果未设置探针，起不到不停机发布的效果，容器为启动完成就认为可用了，同样会造成客户端不可用
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-web-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: springboot-web
+  type: ClusterIP
+
+---
+#ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: springboot-web-ingress
+spec:
+  rules:
+  - host: eureka.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: springboot-web-service
+          servicePort: 80

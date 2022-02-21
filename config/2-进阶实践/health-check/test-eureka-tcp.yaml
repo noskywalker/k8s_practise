@@ -1,0 +1,29 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-eureka-probe
+  namespace: test
+spec:
+  selector:
+    matchLabels:
+      app: c-eureka-probe-tcp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: c-eureka-probe-tcp
+    spec:
+      containers:
+      - name: c-eureka-probe-tcp
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-eureka:2.0.0
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 5

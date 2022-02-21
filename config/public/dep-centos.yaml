@@ -1,0 +1,20 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: centos-deploy
+spec:
+  selector:
+    matchLabels:
+      app: centos
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: centos
+    spec:
+      containers:
+      - name: centos
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/centos-full
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]

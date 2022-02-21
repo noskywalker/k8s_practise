@@ -1,0 +1,12 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-configuration
+  namespace: ingress-nginx
+  labels:
+    app: ingress-nginx
+data:
+  keep-alive: "20"
+  client-body-timeout: "60"
+  #see https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
+  #/etc/nginx/template/nginx.tmpl

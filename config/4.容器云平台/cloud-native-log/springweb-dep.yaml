@@ -1,0 +1,60 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springweb-log-dep
+spec:
+  selector:
+    matchLabels:
+      app: springweb-log-pod
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: springweb-log-pod
+    spec:
+      containers:
+      - name: springweb-log-pod
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-web:5.0.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: aliyun_logs_springweb-dk
+          value: "stdout"
+        - name: aliyun_logs_spring-web
+          value: "/var/web/logs/*"
+        volumeMounts:
+        - mountPath: /var/web/logs
+          name: accesslogs
+      volumes:
+      - name: accesslogs
+        emptyDir: {}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: springweb-log-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: springweb-log-pod
+---
+#ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: springboot-web-ingress
+spec:
+  rules:
+  - host: wb.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: springweb-log-service
+          servicePort: 80

@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  "9000": default/springboot-web-service-tcp:80
+---
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-web-deploy-tcp
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: springboot-web-service-tcp
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: springboot-web-service-tcp
+    spec:
+      containers:
+      - name: springboot-web-service-tcp  #1.0.0/2.0.0
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-web:1.0.0
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          failureThreshold: 1
+          successThreshold: 1
+          timeoutSeconds: 5
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-web-service-tcp
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: springboot-web-service-tcp
+  type: ClusterIP

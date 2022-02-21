@@ -1,0 +1,36 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-eureka
+spec:
+  selector:
+    matchLabels:
+      app: springboot-eureka
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: springboot-eureka
+    spec:
+      containers:
+      - name: springboot-eureka
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-eureka:2.0.0
+        ports:
+        - containerPort: 8080
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-eureka-service-kube-proxy
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: springboot-eureka
+  type: NodePort
+
+---

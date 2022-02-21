@@ -1,0 +1,48 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-web-test
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: springboot-web-test
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: springboot-web-test
+    spec:
+      containers:
+      - name: springboot-web-blue #2.0.0/1.0.0
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-web:1.0.0
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe: #r如果未设置探针，起不到不停机发布的效果，容器为启动完成就认为可用了，同样会造成客户端不可用
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+      tolerations:
+      - key: "key"
+        operator: "Equal"
+        value: "value"
+        effect: "NoExecute"
+        tolerationSeconds: 20

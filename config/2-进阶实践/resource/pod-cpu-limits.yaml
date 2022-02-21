@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+   name: centos-limits
+   labels:
+     name: centos-limits
+spec:
+   containers:
+   - name: centos-limits
+     image: registry.cn-beijing.aliyuncs.com/alexzhang/centos-full
+     command: ["/bin/sh"]
+     args: ["-c", "while true; do echo hello; sleep 10;done"]
+     resources:
+       requests: 
+         cpu: 0.2
+         memory: 50Mi
+       limits:
+         cpu: 1
+         memory: 800Mi

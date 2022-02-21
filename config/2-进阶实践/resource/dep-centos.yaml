@@ -1,0 +1,27 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scentos
+spec:
+  selector:
+    matchLabels:
+      app: scentos
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: scentos
+    spec:
+      containers:
+      - name: centos
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/centos-full
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello; sleep 10;done"]
+        resources:
+         requests: 
+           cpu: 0.2
+           memory: 50Mi
+         limits:
+           cpu: 1
+           memory: 800Mi

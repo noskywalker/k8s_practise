@@ -1,0 +1,32 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-eureka-probe
+  namespace: test
+spec:
+  selector:
+    matchLabels:
+      app: c-eureka-probe
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: c-eureka-probe
+    spec:
+      containers:
+      - name: c-eureka-probe
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-eureka:2.0.0
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - ps -ef|grep java|grep -v grep
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 2
+          successThreshold: 1
+          timeoutSeconds: 5

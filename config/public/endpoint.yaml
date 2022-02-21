@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-outer
+spec:
+  ports:
+    - port: 3306
+
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: mysql-outer
+  namespace: default
+subsets:
+  - addresses:
+      - ip: 192.168.1.212
+    ports:
+      - port: 3306

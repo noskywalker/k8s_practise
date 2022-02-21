@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors#将error信息输出到stdout
+        health#健康检查信息输出接口
+        hosts {
+              192.168.1.201 master
+              192.168.1.211 slave1
+              192.168.1.212 slave2
+              fallthrough
+        }
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           upstream 172.16.0.1
+           fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153#prometheus的metric输出接口http://localhost:9153/metrics
+        forward . 172.16.0.1#转发模式
+        cache 30#前端缓存
+        loop#检测到简单的转发循环，如果发现死循环，则中止 CoreDNS 进程,如forward 127.0.0.1，查询两次会终止
+        reload#默认两分钟重新加载配置文件
+        loadbalance#这是一个轮询 DNS 负载均衡器，它在应答中随机分配 A，AAAA 和 MX 记录的顺序。
+    }
+    consul.local:53 {
+        errors
+        cache 30
+        proxy . 10.150.0.1
+    }

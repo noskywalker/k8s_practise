@@ -1,0 +1,54 @@
+#deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-web
+spec:
+  selector:
+    matchLabels:
+      app: springboot-web
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: springboot-web
+    spec:
+      containers:
+      - name: springboot-web
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/spring-web:2.0.0
+        ports:
+        - containerPort: 8080
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-web-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: springboot-web
+  type: ClusterIP
+
+---
+#ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: springboot-web-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "web.test.com"
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: springboot-web-service
+                port:
+                  number: 80

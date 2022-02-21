@@ -1,0 +1,123 @@
+---
+# https://portworx.com/run-ha-elasticsearch-elk-rancher-kubernetes-engine/
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-api
+  namespace: kube-system
+  labels:
+    name: elasticsearch
+spec:
+  selector:
+    app: es
+  ports:
+  - name: transport
+    port: 9200
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-discovery
+  namespace: kube-system
+  labels:
+    name: elasticsearch
+spec:
+  selector:
+    app: es
+  ports:
+  - name: transport
+    port: 9300
+    protocol: TCP
+  clusterIP: None
+
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+spec:
+  replicas: 3
+  serviceName: "elasticsearch-discovery"
+  selector:
+    matchLabels:
+      app: es
+  template:
+    metadata:
+      labels:
+        app: es
+    spec:
+      serviceAccountName: admin
+      initContainers:
+      - name: init-sysctl-vm-max
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/busybox
+        command:
+        - sysctl
+        - -w
+        - vm.max_map_count=262144
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch
+        image: registry.cn-beijing.aliyuncs.com/alexzhang/elasticsearch:6.5.0
+        ports:
+        - containerPort: 9200
+          protocol: TCP
+        - containerPort: 9300
+          protocol: TCP
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
+              - SYS_RESOURCE
+        resources:
+          limits:
+            memory: 2000Mi
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        env:
+          - name: "http.host"
+            value: "0.0.0.0"
+          - name: "network.host"
+            value: "_eth0_"
+          - name: "cluster.name"
+            value: "docker-cluster"
+          - name: "bootstrap.memory_lock"
+            value: "false"
+          - name: "discovery.zen.ping.unicast.hosts"
+            value: "elasticsearch-discovery"
+          - name: "discovery.zen.ping.unicast.hosts.resolve_timeout"
+            value: "10s"
+          - name: "discovery.zen.ping_timeout"
+            value: "6s"
+          - name: "discovery.zen.minimum_master_nodes"
+            value: "2"
+          - name: "discovery.zen.fd.ping_interval"
+            value: "2s"
+          - name: "discovery.zen.no_master_block"
+            value: "write"
+          - name: "gateway.expected_nodes"
+            value: "2"
+          - name: "gateway.expected_master_nodes"
+            value: "1"
+          - name: "transport.tcp.connect_timeout"
+            value: "60s"
+          - name: "ES_JAVA_OPTS"
+            value: "-Xms512m -Xmx512m"
+        livenessProbe:
+          tcpSocket:
+            port: 9300
+          initialDelaySeconds: 100
+          periodSeconds: 10
+        volumeMounts:
+        - name: esdata
+          mountPath: /data
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: esdata
+        hostPath:
+          path: /esdata

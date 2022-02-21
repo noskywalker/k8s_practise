@@ -1,0 +1,16 @@
+---
+#ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: kube-system
+  name: kibana-ingress
+spec:
+  rules:
+  - host: kb.test.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kibana
+          servicePort: 80
